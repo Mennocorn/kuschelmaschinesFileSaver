@@ -65,3 +65,16 @@ class RequestSender:
     async def send(self, data: dict):
         data = json.dumps(data)
         self.s.send(bytes(data, encoding="utf-8"))
+
+
+class Folder:
+    username: str
+    password: str
+
+
+class File(Folder):
+    content: str
+
+
+class Cache:
+    pass
