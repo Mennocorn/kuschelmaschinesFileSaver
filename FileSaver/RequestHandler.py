@@ -6,7 +6,6 @@ class Session:
     def __init__(self, username: str, password: str):
         self.username = username
         self.password = password
-        self.known_folders = []
         self.sender = RequestSender(session=self)
 
     def create_folder(self, name: str,  **kwargs):
