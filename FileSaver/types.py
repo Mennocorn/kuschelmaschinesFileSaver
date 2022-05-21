@@ -31,7 +31,7 @@ class File:
         self.session = session
         self.name = name
         self.folder = folder
-        self.content = ' '  # self.session.content(folder=self.folder.name, file=self.name)
+        self.content = self.session.content(folder=self.folder.name, file=self.name)
 
     def write(self, content, overwrite: bool = False, **kwargs):
         data = {
@@ -40,7 +40,18 @@ class File:
             "fileContent": f'{content}',
             "sender": kwargs.get('username', self.folder.username),
             "password": kwargs.get('password', self.folder.password),
-            "overwrite": overwrite,
+            "override": overwrite,
             "type": "file_write_request"
         }
+        self.session.loop.run_until_complete(self.session.handler.send(data))
+
+    def rename(self, name, **kwargs):
+        data = {
+            "sender": kwargs.get('username', self.folder.username),
+            "password": kwargs.get('password', self.folder.password),
+            "folderPath": self.folder.name,
+            "oldFileName": self.name,
+            "newFileName": name,
+        }
+        self.name = name
         self.session.loop.run_until_complete(self.session.handler.send(data))

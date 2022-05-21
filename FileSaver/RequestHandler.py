@@ -5,7 +5,6 @@ import socket
 from .types import Folder, File
 
 
-
 class Session:
     _latency: int
 
