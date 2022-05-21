@@ -2,7 +2,6 @@ import asyncio
 import datetime
 import json
 import socket
-import time
 
 
 class Session:
@@ -72,7 +71,7 @@ class Session:
         for x in range(50):
             start_time = datetime.datetime.now()
             self.__loop.run_until_complete(self.handler.send(data))
-            reply = self.handler.s.recv(4096)
+            self.handler.s.recv(4096)
             times.append(int(str((datetime.datetime.now() - start_time))))
 
         return sum(times)/50
