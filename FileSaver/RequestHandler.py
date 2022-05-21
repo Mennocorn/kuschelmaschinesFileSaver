@@ -2,6 +2,8 @@ import asyncio
 import datetime
 import json
 import socket
+from .types import Folder, File
+
 
 
 class Session:
@@ -11,42 +13,21 @@ class Session:
         self.username = username
         self.password = password
         self.handler = RequestHandler(session=self)
-        self.__loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(self.__loop)
+        self.loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(self.loop)
 
     def create_folder(self, name: str,  **kwargs):
-        sender: str
-        password: str
+        sender: str = kwargs.get('username', self.username)
+        password: str = kwargs.get('password', self.password)
 
         data = {
             "filePath": name,  # str
-            "sender": kwargs.get('username', self.username),  # str
-            "password": kwargs.get('password', self.password),  # str
+            "sender": sender,  # str
+            "password": password,  # str
             "type": "folder_create_request"  # str
         }
-        self.__loop.run_until_complete(self.handler.send(data))
-
-    def create_file(self, folder: str, name: str, content, **kwargs):
-        data = {
-            "folderPath": folder,
-            "fileName": f"{name}.txt",
-            "fileContent": f'{content}',
-            "sender": kwargs.get('username', self.username),
-            "password": kwargs.get('password', self.password),
-            "type": "file_create_request"
-        }
-        self.__loop.run_until_complete(self.handler.send(data))
-
-    def file_write(self, folder: str, file: str, content, **kwargs):
-        data = {
-            "folderPath": folder,
-            "fileName": f"{file}.txt",
-            "fileContent": f'{content}',
-            "sender": kwargs.get('username', self.username),
-            "password": kwargs.get('password', self.password),
-            "type": "file_write_request"
-        }
-        self.__loop.run_until_complete(self.handler.send(data))
+        self.loop.run_until_complete(self.handler.send(data))
+        return Folder(session=self, name=name, username=sender, password=password)
 
     def content(self, folder: str, file: str, **kwargs):
         data = {
@@ -56,7 +37,10 @@ class Session:
             "password": kwargs.get('password', self.password),
             "type": "file_content_request"
         }
-        self.__loop.run_until_complete(self.handler.send(data))
+        self.loop.run_until_complete(self.handler.send(data))
+        reply = self.handler.s.recv(4096)
+        reply = json.loads(reply)
+        return reply['content']
 
     @property
     def latency(self, **kwargs) -> float:
@@ -69,17 +53,24 @@ class Session:
         }
 
         for x in range(50):
+            print('looped')
             start_time = datetime.datetime.now()
-            self.__loop.run_until_complete(self.handler.send(data))
+            self.loop.run_until_complete(self.handler.send(data))
             self.handler.s.recv(4096)
-            times.append(int(str((datetime.datetime.now() - start_time))))
+            times.append(float((datetime.datetime.now() - start_time).total_seconds()))
 
         return sum(times)/50
 
+    def get_file(self, name: str, folder: Folder):
+        return File(session=self, name=name, folder=folder)
+
+    def get_folder(self, name, **kwargs):
+        return Folder(session=self, name=name, password=kwargs.get('password', self.password), username=kwargs.get('username', self.username))
+
 
 class RequestHandler:
-    address = '91.47.51.8'
-    port = 25665
+    address = '84.160.195.225'
+    port = 4747
 
     def __init__(self, session: Session):
         self.session = session
@@ -88,16 +79,7 @@ class RequestHandler:
 
     async def send(self, data: dict):
         data = json.dumps(data)
-        self.s.send(bytes(data, encoding="utf-8"))
-
-
-class Folder:
-    username: str
-    password: str
-
-
-class File(Folder):
-    content: str
+        self.s.send(bytes(data + '\n', encoding="utf-8"))
 
 
 class Cache:
