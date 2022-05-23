@@ -9,17 +9,26 @@ class Folder:
         self.username = username
         self.password = password
 
-    def create_file(self, name: str, content, **kwargs):
+    def create_file(self, name: str, content=None, file=None, **kwargs):
+        if file is not None:
+            with open(f"{file}.jpg", "rb") as image:
+                f = image.read()
+                b = bytes(f)
+            is_pic = True
+        else:
+            b = None
+            is_pic = False
         data = {
             "folderPath": self.name,
-            "fileName": f"{name}.txt",
-            "fileContent": f'{content}',
+            "fileName": f"{name}",
+            "fileType": "jpg" if file is not None else "txt",
+            "fileContent": str(b) or f'{content}',
             "sender": kwargs.get('username', self.username),
             "password": kwargs.get('password', self.password),
             "type": "file_create_request"
         }
         self.session.loop.run_until_complete(self.session.handler.send(data))
-        return File(session=self.session, name=name, folder=self)
+        return File(session=self.session, name=name, folder=self, is_pic=is_pic)
 
 
 class File:
@@ -27,11 +36,13 @@ class File:
     folder: Folder
     content: str
 
-    def __init__(self, session, name, folder: Folder):
+    def __init__(self, session, name, folder: Folder, is_pic):
         self.session = session
         self.name = name
         self.folder = folder
-        self.content = self.session.content(folder=self.folder.name, file=self.name)
+        self.is_pic = is_pic
+        if not self.is_pic:
+            self.content = self.session.content(folder=self.folder.name, file=self.name)
 
     def write(self, content, overwrite: bool = False, **kwargs):
         data = {
