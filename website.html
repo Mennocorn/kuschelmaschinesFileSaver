@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script>
+        const socket = new WebSocket("SERVER IP"); //hier musst du deine aktuelle ip/server adresse reinmachen
+
+        function sendDataToServer(){
+            console.log("got to function")
+            let value = document.getElementById("content");
+            value = value.value 
+            socket.send(value)
+        }
+    </script>
+</head>
+<body>
+    <textarea id="content" class="textarea">Hier können Sie Feedback hinterlassen</textarea>
+    <div style="text-align:left;">
+        <button style="font-family: Source Sans Pro,serif; font-size: 15pt;" onclick="return sendDataToServer();">Abschicken</button>
+    </div>
+
+</body>
+</html>
