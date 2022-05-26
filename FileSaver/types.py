@@ -1,23 +1,50 @@
+class Settings:
+
+    def __init__(self, folder, username: str = None, password: str = None):
+        self.folder = folder
+        self._username = username
+        self._password = password
+        self._readers = []
+        self.load()
+
+    @property
+    def username(self) -> str:
+        return self._username
+
+    @property
+    def password(self, **kwargs):
+        return self._password
+
+    def load(self):
+        pass
+
+
+
+
+
+
 class Folder:
     name: str
     username: str
     password: str
+    _settings: Settings
 
     def __init__(self, session, name, username, password):
         self.session = session
         self.name = name
-        self.username = username
-        self.password = password
+        self._settings = Settings(folder=self, username=username, password=password)
 
-    def create_file(self, name: str, content=None, file=None, **kwargs):
-        if file is not None:
-            with open(f"{file}.jpg", "rb") as image:
-                f = image.read()
-                b = bytes(f)
-            is_pic = True
+    def create_file(self, name: str, content=None, file: bool = False, **kwargs):
+        if file:
+            try:
+                with open(f"{content}.jpg", "rb") as image:
+                    f = image.read()
+                    b = bytes(f)
+            except FileNotFoundError:
+                return None, print(f"A file of this name {content} does not exist.")
+
         else:
             b = None
-            is_pic = False
         data = {
             "folderPath": self.name,
             "fileName": f"{name}",
@@ -28,7 +55,7 @@ class Folder:
             "type": "file_create_request"
         }
         self.session.loop.run_until_complete(self.session.handler.send(data))
-        return File(session=self.session, name=name, folder=self, is_pic=is_pic)
+        return File(session=self.session, name=name, folder=self, is_pic=file)
 
 
 class File:
