@@ -3,6 +3,7 @@ import datetime
 import json
 import socket
 from .types import Folder, File
+from .utils.logger import Logger
 
 
 class Session:
@@ -12,8 +13,22 @@ class Session:
         self.username = username
         self.password = password
         self.handler = RequestHandler(session=self)
+        self._counter = -1
+        self.logger = Logger()
+        self.awaiting_receive = {
+
+        }
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
+
+    @property
+    def counter(self):
+        self.counter += 1
+        return self.counter
+
+    @counter.setter
+    def counter(self, value):
+        self.counter = value
 
     def create_folder(self, name: str,  **kwargs):
         sender: str = kwargs.get('username', self.username)

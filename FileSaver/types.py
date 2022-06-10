@@ -1,26 +1,4 @@
-class Settings:
-
-    def __init__(self, folder, username: str = None, password: str = None):
-        self.folder = folder
-        self._username = username
-        self._password = password
-        self._readers = []
-        self.load()
-
-    @property
-    def username(self) -> str:
-        return self._username
-
-    @property
-    def password(self, **kwargs):
-        return self._password
-
-    def load(self):
-        pass
-
-
-
-
+from FileSaver.utils.FolderAddition import Settings
 
 
 class Folder:
@@ -56,6 +34,9 @@ class Folder:
         }
         self.session.loop.run_until_complete(self.session.handler.send(data))
         return File(session=self.session, name=name, folder=self, is_pic=file)
+
+
+
 
 
 class File:
