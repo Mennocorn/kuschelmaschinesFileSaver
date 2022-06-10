@@ -2,7 +2,6 @@ import traceback
 
 from FileSaver.types import Folder
 from FileSaver.utils.errors import NotOwner
-from FileSaver.utils.logger import Error
 
 
 class Settings:
