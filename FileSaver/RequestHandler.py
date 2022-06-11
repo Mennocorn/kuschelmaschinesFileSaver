@@ -10,7 +10,7 @@ class Session:
     _latency: int
 
     def __init__(self, username: str, password: str):
-        self.username = username
+        self._username = username
         self.password = password
         self.handler = RequestHandler(session=self)
         self._counter = -1
@@ -20,6 +20,14 @@ class Session:
         }
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
+
+    @property
+    def username(self):
+        return self._username
+
+    @username.setter
+    def username(self, value):
+        self._username = value
 
     @property
     def counter(self):

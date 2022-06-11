@@ -27,8 +27,14 @@ class Settings:
         return self._username
 
     @property
-    def password(self, **kwargs):
+    def password(self):
         return self._password
+
+    @password.setter
+    def password(self, value):
+        if not self.is_owner:
+            raise NotOwner("You cannot change this folders password without being this folders owner!\nFolder Name: {self.folder.name}")
+        self._password = value
 
     def request(self):
         request_id = self.folder.session.counter
@@ -37,7 +43,7 @@ class Settings:
             "password": self._password,
             "folderPath": self.folder.name,
             "type": "folder_settings_request",
-            "id": request_id
+            "index": request_id
         }
         self.folder.session.awaiting_receive[str(request_id)] = self
         self.folder.session.loop.run_until_complete(self.folder.session.handler.send(data))

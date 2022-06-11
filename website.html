@@ -2,15 +2,19 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>FileSaver</title>
+    <link rel="stylesheet" href="website.css">
     <script>
         const socket = new WebSocket("SERVER IP"); //hier musst du deine aktuelle ip/server adresse reinmachen
-
+        const attribute = ["folderPath", "fileName", "fileType" ]
         function sendDataToServer(){
-            console.log("got to function")
+            console.log("got to function");
             let value = document.getElementById("content");
-            value = value.value 
-            socket.send(value)
+            value = value.value
+            let data = {
+
+            }
+            send(value)
         }
     </script>
 </head>
