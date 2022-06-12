@@ -2,7 +2,10 @@ import asyncio
 import datetime
 import json
 import socket
-from .types import Folder, File
+import typing
+from typing import Literal
+
+from FileSaver.types import File, Folder
 from .utils.logger import Logger
 
 
@@ -15,6 +18,7 @@ class Session:
         self.handler = RequestHandler(session=self)
         self._counter = -1
         self.logger = Logger()
+        self.cache = Cache()
         self.awaiting_receive = {
 
         }
@@ -84,10 +88,10 @@ class Session:
         return sum(times)/50
 
     def get_file(self, name: str, folder: Folder):
-        return File(session=self, name=name, folder=folder)
+        return self.cache.get_cached(name=name, folder=folder, is_file=True) or File(session=self, name=name, folder=folder)
 
     def get_folder(self, name, **kwargs):
-        return Folder(session=self, name=name, password=kwargs.get('password', self.password), username=kwargs.get('username', self.username))
+        return self.cache.get_cached(name=name) or Folder(session=self, name=name, password=kwargs.get('password', self.password), username=kwargs.get('username', self.username))
 
 
 class RequestHandler:
@@ -105,4 +109,22 @@ class RequestHandler:
 
 
 class Cache:
-    pass
+    cached_folders: list[Folder]
+    cached_files: list[File]
+
+    def get_cached(self, name: str, folder: Folder = None, is_file: bool = False):
+        if is_file:
+            my_search = [x.name for x in self.cached_files]
+            if name in my_search:
+                file = self.cached_files[my_search.index(name)]
+              #  if my_search.count(name) == 1:
+              #       return file
+                if file.folder == folder or folder is None:
+                    return file
+                self.cached_files.remove(file)
+                self.cached_files.append(file)
+                self.get_cached(name=name, folder=folder, is_file=True)
+        my_search = [x.name for x in self.cached_folders]
+        if name in my_search:
+            return self.cached_folders[my_search.index(name)]
+        return None

@@ -15,6 +15,10 @@ class Folder:
         self._settings = Settings(folder=self, username=username, password=password)
         self._files = []
         self.request_files()
+    
+    @property
+    def settings(self):
+        return self._settings
 
     def create_file(self, name: str, content=None, file: bool = False, **kwargs):
         if file:
@@ -54,3 +58,6 @@ class Folder:
     def load_files(self, filenames: list):
         for file in filenames:
             self._files.append(File(session=self.session, name=file, folder=self))
+
+    def __repr__(self):
+        return self.name
